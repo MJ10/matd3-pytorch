@@ -79,7 +79,7 @@ class MADDPG(object):
         return [a.step(obs, explore=explore) for a, obs in zip(self.agents,
                                                                  observations)]
 
-    def update(self, sample, agent_i, parallel=False, logger=None):
+    def update(self, sample, agent_i, parallel=False):
         """
         Update parameters of agent model based on sample from replay buffer
         Inputs:
@@ -164,8 +164,7 @@ class MADDPG(object):
             average_gradients(curr_agent.policy)
         torch.nn.utils.clip_grad_norm(curr_agent.policy.parameters(), 0.5)
         curr_agent.policy_optimizer.step()
-        if logger is not None:
-            logger.add_scalars('agent%i/losses' % agent_i,
+        print('agent%i/losses' % agent_i,
                                {'vf_loss': vf_loss,
                                 'pol_loss': pol_loss},
                                self.niter)
