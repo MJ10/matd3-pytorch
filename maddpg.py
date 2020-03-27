@@ -165,7 +165,7 @@ class MADDPG(object):
         torch.nn.utils.clip_grad_norm(curr_agent.policy.parameters(), 0.5)
         curr_agent.policy_optimizer.step()
         if logger is not None:
-            logger.add_scalar('agent%i/losses' % agent_i,
+            logger.add_scalars('agent%i/losses' % agent_i,
                                {'vf_loss': vf_loss,
                                 'pol_loss': pol_loss},
                                self.niter)
