@@ -9,6 +9,7 @@ from torch.autograd import Variable
 from env_wrapper import make_env, SubprocVecEnv, DummyVecEnv
 from buffer import ReplayBuffer
 from maddpg import MADDPG
+from torch.utils.tensorboard import SummaryWriter
 
 USE_CUDA = False  # torch.cuda.is_available()
 
@@ -38,10 +39,10 @@ def run(config):
         else:
             curr_run = 'run%i' % (max(exst_run_nums) + 1)
     run_dir = model_dir / curr_run
-    # log_dir = run_dir / 'logs'
-    # os.makedirs(log_dir)
+    log_dir = 'logs'
+    os.makedirs(log_dir)
     # logger = SummaryWriter(str(log_dir))
-
+    writer = SummaryWriter(log_dir)
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     if not USE_CUDA:
@@ -95,13 +96,13 @@ def run(config):
                     for a_i in range(maddpg.nagents):
                         sample = replay_buffer.sample(config.batch_size,
                                                       to_gpu=USE_CUDA)
-                        maddpg.update(sample, a_i, logger=logger)
+                        maddpg.update(sample, a_i, logger=writer)
                     maddpg.update_all_targets()
                 maddpg.prep_rollouts(device='cpu')
         ep_rews = replay_buffer.get_average_rewards(
             config.episode_length * config.n_rollout_threads)
         for a_i, a_ep_rew in enumerate(ep_rews):
-            print('agent%i/mean_episode_rewards' % a_i, a_ep_rew, ep_i)
+            writer.add_scalar('agent%i/mean_episode_rewards' % a_i, a_ep_rew, ep_i)
 
         if ep_i % config.save_interval < config.n_rollout_threads:
             os.makedirs(run_dir / 'incremental', exist_ok=True)
