@@ -9,6 +9,7 @@ from torch.autograd import Variable
 from env_wrapper import make_env, SubprocVecEnv, DummyVecEnv
 from buffer import ReplayBuffer
 from maddpg import MADDPG
+from matd3 import MATD3
 from torch.utils.tensorboard import SummaryWriter
 
 USE_CUDA = False  # torch.cuda.is_available()
@@ -39,9 +40,9 @@ def run(config):
         else:
             curr_run = 'run%i' % (max(exst_run_nums) + 1)
     run_dir = model_dir / curr_run
-    log_dir = 'logs'
-    os.makedirs(log_dir)
-    # logger = SummaryWriter(str(log_dir))
+    log_dir = run_dir / 'logs'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
     writer = SummaryWriter(log_dir)
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
@@ -49,7 +50,7 @@ def run(config):
         torch.set_num_threads(config.n_training_threads)
     env = make_parallel_env(config.env_id, config.n_rollout_threads, config.seed,
                             config.discrete_action)
-    maddpg = MADDPG.init_from_env(env, agent_alg=config.agent_alg,
+    maddpg = MATD3.init_from_env(env, agent_alg=config.agent_alg,
                                   adversary_alg=config.adversary_alg,
                                   tau=config.tau,
                                   lr=config.lr,
@@ -138,11 +139,11 @@ if __name__ == '__main__':
     parser.add_argument("--lr", default=0.01, type=float)
     parser.add_argument("--tau", default=0.01, type=float)
     parser.add_argument("--agent_alg",
-                        default="MADDPG", type=str,
-                        choices=['MADDPG', 'DDPG'])
+                        default="MATD3", type=str,
+                        choices=['MATD3', 'TD3'])
     parser.add_argument("--adversary_alg",
-                        default="MADDPG", type=str,
-                        choices=['MADDPG', 'DDPG'])
+                        default="MATD3", type=str,
+                        choices=['MATD3', 'TD3'])
     parser.add_argument("--discrete_action",
                         action='store_true')
 

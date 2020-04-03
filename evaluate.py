@@ -7,6 +7,7 @@ from pathlib import Path
 from torch.autograd import Variable
 from env_wrapper import make_env
 from maddpg import MADDPG
+from matd3 import MATD3
 
 
 def run(config):
@@ -22,7 +23,7 @@ def run(config):
         gif_path = model_path.parent / 'gifs'
         gif_path.mkdir(exist_ok=True)
 
-    maddpg = MADDPG.init_from_save(model_path)
+    maddpg = MATD3.init_from_save(model_path)
     env = make_env(config.env_id, discrete_action=maddpg.discrete_action)
     maddpg.prep_rollouts(device='cpu')
     ifi = 1 / config.fps  # inter-frame interval
